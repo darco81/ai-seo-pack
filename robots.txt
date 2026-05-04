@@ -1,0 +1,43 @@
+# robots.txt - explicit allow-list dla AI crawlerów.
+# Strategia: distribution > protection. Jeśli chcesz żeby LLM cytował,
+# musi mieć dostęp.
+#
+# Podstaw: <DOMENA> → np. portfolio.example.com
+# Dla i18n duo-domain: każda domena ma własny sitemap link.
+
+User-agent: *
+Allow: /
+
+# AI crawlers (explicit allow - niektóre używają różnych UA stringów)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+# Block MCP endpoint (nie chcesz indexowania RPC server)
+# Block /api (backend endpoints)
+User-agent: *
+Disallow: /mcp
+Disallow: /api/
+
+# Sitemap (per domena - astro sitemap integration generuje sitemap-index)
+Sitemap: https://<DOMENA>/sitemap-index.xml
