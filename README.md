@@ -23,6 +23,7 @@ podstawić.
 | `head/BaseHead.astro`             | Komponent `<head>` z pełnym kompletem meta                  | Canonical, hreflang, OG, Twitter Card, JSON-LD (WebSite + Article + Person), `<link rel="llm">`.                       |
 | `head/JSON-LD-examples.md`        | Snippet'y JSON-LD do wklejenia                               | Article / Person / Organization / FAQPage / BreadcrumbList. Google bierze to do rich results + AI Overview.            |
 | `config/astro.config.snippet.ts`  | Fragment `astro.config.ts`                                   | Sitemap integration z i18n (hreflang per URL), filter excluding `/mcp` / `/api/`.                                       |
+| `endpoints/well-known-llms.txt.ts.example` | Endpoint `/.well-known/llms.txt`                  | Alias do `/llms.txt`. Niektóre MCP-aware tools (Cursor, Continue, custom agents) sprawdzają `.well-known/` jako pierwsze (RFC 8615). Cheap insurance, ~5 min implementacji. |
 
 ---
 
@@ -34,6 +35,13 @@ podstawić.
 2. **Sitemap** (`@astrojs/sitemap` integration) - patrz `config/astro.config.snippet.ts`.
 3. **`BaseHead.astro`** w każdej stronie (canonical + OG + Twitter Card + JSON-LD WebSite).
 4. **GSC + Bing Webmaster** - submituj sitemap.
+
+### Tier 0.5 - cheap insurance, 5 min
+
+4a. **`/.well-known/llms.txt`** - alias/redirect do `/llms.txt`. Niektóre
+    MCP-aware tools (Cursor, Continue, custom agents) sprawdzają
+    `.well-known/` jako pierwsze (RFC 8615) zanim spadną na root.
+    Snippet: `endpoints/well-known-llms.txt.ts.example`.
 
 ### Tier 1 - wyróżnia portfolio od reszty, 2-4h
 
@@ -93,6 +101,8 @@ export const SITE = {
 7. **`/mcp` i `/api/*`** muszą być w `robots.txt` Disallow + sitemap filter - nie chcesz indeksować RPC endpoint'ów.
 8. **GSC URL Inspection → Request Indexing** - po pierwszym deploy ręcznie poproś o indeksację top 5-10 URLi (homepage + flagship artykuły). Bez tego Google leci 3-7 dni naturalnym crawlem.
 9. **AI crawler caching** - niektóre boty (PerplexityBot) cache'ują content na 7-14 dni. Update llms-full.txt build-time, nie SSR per-request.
+10. **`/llms.txt` "Last updated" auto-stamp** - zawsze stampuj z build date (`new Date().toISOString().slice(0,10)` w SSG-baked endpoint'cie), nigdy manualnie. Manual data driftuje przy każdym deployu, sygnalizuje stale content. PerplexityBot cache'uje 7-14 dni - świeży `Last updated` zachęca do re-fetch.
+11. **Per-domain `Sitemap:` URL w robots.txt dla dual-domain** - jeśli serwujesz portfolio na 2 domenach (np. `.pl` + `.com`), static `Sitemap: https://only-one-domain/...` w `public/robots.txt` zawiedzie: jedna domena dostanie cross-domain URL, GSC zaraportuje "URL submitted is not on this site." Fix: konwersja `public/robots.txt` → dynamiczny `src/pages/robots.txt.ts` używający `SITE.url` per build.
 
 ---
 
@@ -118,6 +128,19 @@ curl -s https://domena.pl/ | grep -A 30 'application/ld+json'
 # MCP smoke test
 curl -s https://domena.pl/mcp | jq .
 curl -s 'https://domena.pl/mcp?tool=list_articles&language=pl' | jq .
+
+# Mniejsze AI boty dostają 200 (nie 403/blocked)
+for UA in "Bytespider/1.0" "Amazonbot/0.1" "OAI-SearchBot/1.0" \
+          "DuckAssistBot/1.0" "Meta-ExternalAgent/1.1" \
+          "FacebookExternalHit/1.1"; do
+  curl -A "$UA" -s -o /dev/null -w "$UA -> %{http_code}\n" \
+    https://domena.pl/
+done
+
+# /llms.txt + /.well-known/llms.txt servuja identyczny content
+curl -s https://domena.pl/llms.txt -o /tmp/a.txt
+curl -s https://domena.pl/.well-known/llms.txt -o /tmp/b.txt
+diff /tmp/a.txt /tmp/b.txt && echo "OK: identical content"
 ```
 
 External tools:

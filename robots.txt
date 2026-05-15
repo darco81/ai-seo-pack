@@ -33,6 +33,52 @@ Allow: /
 User-agent: ChatGPT-User
 Allow: /
 
+# Mniejsze / nowsze AI boty (2026).
+# Wildcard `User-agent: *` Allow i tak je obejmuje, ale explicit Allow
+# sygnalizuje intencję - niektóre parsery honorują tylko jawne deklaracje
+# User-agent + clearer audit trail dla compliance (DSA, EU AI Act, opt-out
+# rejestry typu ai.robots.txt).
+
+# OAI-SearchBot - ramię wyszukiwarkowe OpenAI, oddzielne od GPTBot (training)
+User-agent: OAI-SearchBot
+Allow: /
+
+# Bytespider - crawler ByteDance / Doubao, jeden z największych chińskich LLM
+User-agent: Bytespider
+Allow: /
+
+# Amazonbot - Alexa + asystent Amazon Q
+User-agent: Amazonbot
+Allow: /
+
+# DuckAssistBot - asystent AI DuckDuckGo
+User-agent: DuckAssistBot
+Allow: /
+
+# YouBot - You.com search AI
+User-agent: YouBot
+Allow: /
+
+# cohere-ai - crawler trenujący Cohere
+User-agent: cohere-ai
+Allow: /
+
+# Diffbot - graf wiedzy używany przez wiele produktów LLM
+User-agent: Diffbot
+Allow: /
+
+# anthropic-ai - legacy UA Anthropic, dla starszych integracji
+User-agent: anthropic-ai
+Allow: /
+
+# FacebookExternalHit - renderer link preview dla LinkedIn, Slack, FB
+User-agent: FacebookExternalHit
+Allow: /
+
+# Meta-ExternalAgent - crawler Meta AI
+User-agent: Meta-ExternalAgent
+Allow: /
+
 # Block MCP endpoint (nie chcesz indexowania RPC server)
 # Block /api (backend endpoints)
 User-agent: *
