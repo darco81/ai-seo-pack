@@ -1,0 +1,19 @@
+/**
+ * /.well-known/llms.txt - alias do /llms.txt.
+ *
+ * llmstxt.org spec lokuje kanoniczny plik na rooku (/llms.txt), ale część
+ * MCP-aware tools i discovery clients sprawdza /.well-known/ jako pierwsze
+ * (RFC 8615) zanim spadnie na root. Ten endpoint re-eksportuje ten sam
+ * handler, więc oba URLs zwracają identyczny content z jednego źródła prawdy.
+ *
+ * Astro: zapisz jako `src/pages/.well-known/llms.txt.ts`.
+ * Next.js: route handler w `app/.well-known/llms.txt/route.ts` (import logiki
+ *          z `app/llms.txt/route.ts`).
+ *
+ * Smoke test po deployu:
+ *   curl -s https://domena.pl/llms.txt | md5sum
+ *   curl -s https://domena.pl/.well-known/llms.txt | md5sum
+ *   # → te same hashe = OK
+ */
+
+export { GET } from '../llms.txt';
